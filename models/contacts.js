@@ -35,13 +35,17 @@ export const removeContact = async (contactId) => {
   return deletedContact;
 };
 
-export const updateContact = async (contactId, body) => {
+export const updateContact = async (contactId, changes) => {
   const allContacts = await listContacts();
   const contactIndex = allContacts.findIndex(({ id }) => id === contactId);
   if (contactIndex === -1) {
     return null;
   }
-  allContacts[contactIndex] = { id: contactId, ...body };
+  allContacts[contactIndex] = {
+    id: contactId,
+    ...allContacts[contactIndex],
+    ...changes,
+  };
   await fs.writeFile(contactsPath, JSON.stringify(allContacts, null, 2));
   return allContacts[contactIndex];
 };

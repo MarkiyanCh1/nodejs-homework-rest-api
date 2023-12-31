@@ -1,6 +1,6 @@
 import Joi from "joi";
 
-export const schema = Joi.object({
+export const addSchema = Joi.object({
   name: Joi.string()
     .min(6)
     .required()
@@ -13,4 +13,10 @@ export const schema = Joi.object({
     .min(6)
     .required()
     .messages({ "any.required": "missing required phone field" }),
+});
+
+export const updateSchema = Joi.object({
+  name: Joi.string(),
+  email: Joi.string(),
+  phone: Joi.string(),
 });
