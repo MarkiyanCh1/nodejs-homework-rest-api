@@ -18,12 +18,18 @@ const contactSchema = new Schema(
       type: Boolean,
       default: false,
     },
+    owner: {
+      type: Schema.Types.ObjectId,
+      ref: "user",
+      required: true,
+    },
   },
   { versionKey: false, timestamps: true }
 );
 
 contactSchema.post("save", (error, data, next) => {
-  error.status = 400;
+  const { name, code } = error;
+  error.status = name === "MongoServerError" && code === 11000 ? 409 : 400;
   next();
 });
 
