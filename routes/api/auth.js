@@ -2,7 +2,11 @@ import express from "express";
 
 import authController from "../../controllers/auth.js";
 
-import { validateBody, isAuthenticate } from "../../middleware/index.js";
+import {
+  validateBody,
+  isAuthenticate,
+  upload,
+} from "../../middleware/index.js";
 
 import {
   userSignupSchema,
@@ -33,6 +37,13 @@ authRouter.patch(
   isAuthenticate,
   validateBody(userSubscriptionSchema),
   authController.subscription
+);
+
+authRouter.patch(
+  "/avatars",
+  isAuthenticate,
+  upload.single("avatar"),
+  authController.updateAvatar
 );
 
 export default authRouter;

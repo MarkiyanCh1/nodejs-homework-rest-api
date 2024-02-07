@@ -1,11 +1,16 @@
 import User from "../models/User.js";
 
-import { httpError, tryCatch } from "../helpers/index.js";
+import { httpError, tryCatch, adjustingAvatar } from "../helpers/index.js";
 
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import gravatar from "gravatar";
+import path from "path";
+import fs from "fs/promises";
 
 const { JWT_SECRET } = process.env;
+
+const avatarsDir = path.resolve("public/avatars");
 
 const signup = async (req, res) => {
   const { email, password } = req.body;
@@ -16,7 +21,12 @@ const signup = async (req, res) => {
 
   const hashPassword = await bcrypt.hash(password, 10);
 
-  const newUser = await User.create({ ...req.body, password: hashPassword });
+  const avatarURL = gravatar.url(email);
+  const newUser = await User.create({
+    ...req.body,
+    password: hashPassword,
+    avatarURL,
+  });
 
   res.status(201).json({
     user: {
@@ -72,10 +82,30 @@ const subscription = async (req, res) => {
   res.status(200).json(userSubscription);
 };
 
+const updateAvatar = async (req, res, next) => {
+  const { _id } = req.user;
+
+  if (req.file === undefined)
+    throw httpError(404, "Image was not found, check form-data values");
+
+  const { path: tempUpload, originalname } = req.file;
+
+  const filename = `${_id}_${originalname}`;
+  const resultUpload = path.join(avatarsDir, filename);
+
+  await adjustingAvatar(tempUpload);
+  await fs.rename(tempUpload, resultUpload);
+
+  const avatarURL = path.join("avatars", filename);
+  await User.findByIdAndUpdate(_id, { avatarURL });
+  res.status(200).json({ avatarURL });
+};
+
 export default {
   signup: tryCatch(signup),
   signin: tryCatch(signin),
   getCurrent: tryCatch(getCurrent),
   logout: tryCatch(logout),
   subscription: tryCatch(subscription),
+  updateAvatar: tryCatch(updateAvatar),
 };
