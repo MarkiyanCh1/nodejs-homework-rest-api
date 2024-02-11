@@ -31,3 +31,7 @@ export const userSigninSchema = Joi.object({
 export const userSubscriptionSchema = Joi.object({
   subscription: Joi.string().valid("starter", "pro", "business").required(),
 });
+
+export const userEmailSchema = Joi.object({
+  email: Joi.string().min(6).required(),
+});
